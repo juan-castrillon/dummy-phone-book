@@ -37,7 +37,7 @@ func main() {
 		fmt.Printf("Usage: %s search|list <arguments>\n", exe)
 		os.Exit(1)
 	}
-	data = append(data, Entry{"Juan", "Castrillon", "01705254416"})
+	data = append(data, Entry{"Juan", "Castrillon", "01705257416"})
 	data = append(data, Entry{"Benito", "Camelas", "02589748862"})
 	data = append(data, Entry{"Socio", "Elbi", "05874962158"})
 	switch args[1] {
