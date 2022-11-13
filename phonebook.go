@@ -25,6 +25,15 @@ var data = []Entry{}
 var index map[string]int
 var telRegexp = regexp.MustCompile(`^\d+$`)
 
+func getCSVPath() string {
+	customPath := os.Getenv("PHONEBOOK_CSV")
+	if customPath != "" {
+		return customPath
+	}
+	return CSVFILE
+
+}
+
 func readOrCreateCSV(filepath string) error {
 	fI, err := os.Stat(filepath)
 	exists := true
@@ -151,7 +160,7 @@ func main() {
 		fmt.Printf("Usage: %s insert|delete|search|list <arguments>\n", exe)
 		os.Exit(1)
 	}
-	err := readOrCreateCSV(CSVFILE)
+	err := readOrCreateCSV(getCSVPath())
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
