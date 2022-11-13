@@ -20,7 +20,7 @@ type Entry struct {
 
 // CSV Reading and Writing
 //------------------------
-const CSVFILE = "data.csv"
+var CSVFILE string = "data.csv"
 
 type PhoneBook []Entry
 
@@ -28,13 +28,11 @@ var data = PhoneBook{}
 var index map[string]int
 var telRegexp = regexp.MustCompile(`^\d+$`)
 
-func getCSVPath() string {
+func setCSVPath() {
 	customPath := os.Getenv("PHONEBOOK_CSV")
 	if customPath != "" {
-		return customPath
+		CSVFILE = customPath
 	}
-	return CSVFILE
-
 }
 
 func readOrCreateCSV(filepath string) error {
@@ -47,6 +45,7 @@ func readOrCreateCSV(filepath string) error {
 			return err
 		}
 	}
+	index = make(map[string]int)
 	if exists {
 		// Check if regular file
 		if !fI.Mode().IsRegular() {
@@ -73,7 +72,6 @@ func readCSV(filepath string) error {
 	if err != nil {
 		return err
 	}
-	index = make(map[string]int)
 	for i, line := range lines {
 		entry := Entry{
 			Name:       line[0],
@@ -180,7 +178,8 @@ func main() {
 		fmt.Printf("Usage: %s insert|delete|search|list <arguments>\n", exe)
 		os.Exit(1)
 	}
-	err := readOrCreateCSV(getCSVPath())
+	setCSVPath()
+	err := readOrCreateCSV(CSVFILE)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
