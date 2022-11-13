@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 )
@@ -19,11 +20,20 @@ type Entry struct {
 
 // CSV Reading and Writing
 //------------------------
-const CSVFILE = "data.csv"
+var CSVFILE string = "data.csv"
 
-var data = []Entry{}
+type PhoneBook []Entry
+
+var data = PhoneBook{}
 var index map[string]int
 var telRegexp = regexp.MustCompile(`^\d+$`)
+
+func setCSVPath() {
+	customPath := os.Getenv("PHONEBOOK_CSV")
+	if customPath != "" {
+		CSVFILE = customPath
+	}
+}
 
 func readOrCreateCSV(filepath string) error {
 	fI, err := os.Stat(filepath)
@@ -35,6 +45,7 @@ func readOrCreateCSV(filepath string) error {
 			return err
 		}
 	}
+	index = make(map[string]int)
 	if exists {
 		// Check if regular file
 		if !fI.Mode().IsRegular() {
@@ -61,7 +72,6 @@ func readCSV(filepath string) error {
 	if err != nil {
 		return err
 	}
-	index = make(map[string]int)
 	for i, line := range lines {
 		entry := Entry{
 			Name:       line[0],
@@ -102,6 +112,7 @@ func search(key string) *Entry {
 }
 
 func list() {
+	sort.Sort(data)
 	for _, entry := range data {
 		fmt.Printf("%s %s: %s\n", entry.Name, entry.Surname, entry.Tel)
 	}
@@ -143,6 +154,22 @@ func deleteEntry(key string) error {
 	return saveCSV(CSVFILE)
 }
 
+// Implementation of the sort.Interface interface
+func (p PhoneBook) Len() int {
+	return len(p)
+}
+
+func (p PhoneBook) Less(i, j int) bool {
+	if p[i].Surname == p[j].Surname {
+		return p[i].Name < p[j].Name
+	}
+	return p[i].Surname < p[j].Surname
+}
+
+func (p PhoneBook) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}
+
 func main() {
 	args := os.Args
 	nArgs := len(args)
@@ -151,6 +178,7 @@ func main() {
 		fmt.Printf("Usage: %s insert|delete|search|list <arguments>\n", exe)
 		os.Exit(1)
 	}
+	setCSVPath()
 	err := readOrCreateCSV(CSVFILE)
 	if err != nil {
 		fmt.Println(err)
